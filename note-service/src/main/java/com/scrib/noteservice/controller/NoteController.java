@@ -2,6 +2,7 @@ package com.scrib.noteservice.controller;
 
 import com.scrib.common.dto.ApiResponse;
 import com.scrib.common.dto.NoteDto;
+import com.scrib.noteservice.entity.Note;
 import com.scrib.noteservice.service.NoteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
