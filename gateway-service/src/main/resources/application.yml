@@ -23,6 +23,8 @@ spring:
           uri: http://localhost:9203
           predicates:
             - Path=/api/search/**
+          filters:
+            - RewritePath=/api/search/(?<remaining>.*), /search/$\{remaining}
       default-filters:
         - name: RequestRateLimiter
           args:

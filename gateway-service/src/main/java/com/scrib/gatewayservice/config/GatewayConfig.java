@@ -34,6 +34,7 @@ public class GatewayConfig {
                 // Search Service routes
                 .route("search-service", r -> r
                         .path("/api/search/**")
+                        .filters(f -> f.rewritePath("/api/search/(?<remaining>.*)", "/search/${remaining}"))
                         .uri("http://localhost:9203"))
                 
                 .build();
