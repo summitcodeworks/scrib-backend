@@ -559,7 +559,7 @@ main() {
     fi
     
     # Setup PostgreSQL
-    setup_postgresql
+    check_postgresql
     
     # Setup Redis
     start_redis
