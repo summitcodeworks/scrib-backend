@@ -1,8 +1,10 @@
 package com.scrib.common.dto;
 
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 
-public class SearchRequest {
+public class SearchRequest implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Size(max = 100, message = "Query must not exceed 100 characters")
     private String query;
     

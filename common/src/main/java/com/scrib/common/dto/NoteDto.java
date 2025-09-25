@@ -3,10 +3,13 @@ package com.scrib.common.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class NoteDto {
+public class NoteDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private UUID id;
     
     @NotNull(message = "User ID is required")

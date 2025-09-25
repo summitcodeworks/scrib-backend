@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/search")
-@CrossOrigin(origins = "*")
 public class SearchController {
     
     @Autowired
@@ -37,8 +36,8 @@ public class SearchController {
     
     @GetMapping("/notes/public")
     public ResponseEntity<ApiResponse<Page<NoteDto>>> getPublicNotes(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         Page<NoteDto> results = searchService.getPublicNotes(page, size);
         return ResponseEntity.ok(ApiResponse.success(results));
     }
@@ -46,8 +45,8 @@ public class SearchController {
     @GetMapping("/notes/user/{userId}/all")
     public ResponseEntity<ApiResponse<Page<NoteDto>>> getUserNotes(
             @PathVariable UUID userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         Page<NoteDto> results = searchService.getUserNotes(userId, page, size);
         return ResponseEntity.ok(ApiResponse.success(results));
     }
@@ -55,8 +54,8 @@ public class SearchController {
     @GetMapping("/notes/language/{language}")
     public ResponseEntity<ApiResponse<Page<NoteDto>>> getNotesByLanguage(
             @PathVariable String language,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         Page<NoteDto> results = searchService.getNotesByLanguage(language, page, size);
         return ResponseEntity.ok(ApiResponse.success(results));
     }
