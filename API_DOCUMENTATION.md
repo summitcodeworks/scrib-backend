@@ -69,7 +69,16 @@ Scrib uses a simple username-based authentication system. No passwords are requi
 
 ### 2. Check Username Availability
 
-**Endpoint:** `GET /api/users/{username}/exists`
+**Endpoint:** `GET /curl 'http://65.1.185.194:9200/api/users' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: en-US,en;q=0.9' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: http://localhost:3000' \
+  -H 'Referer: http://localhost:3000/' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' \
+  --data-raw '{"username":"debarunlahiri"}' \
+  --insecure`
 
 **Description:** Checks if a username is available for registration.
 

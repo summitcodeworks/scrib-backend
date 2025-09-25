@@ -2,7 +2,6 @@ package com.scrib.userservice.controller;
 
 import com.scrib.common.dto.ApiResponse;
 import com.scrib.common.dto.UserDto;
-import com.scrib.common.exception.GlobalExceptionHandler;
 import com.scrib.userservice.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "*")
 public class UserController {
     
     @Autowired
@@ -32,20 +30,20 @@ public class UserController {
     }
     
     @GetMapping("/{username}/exists")
-    public ResponseEntity<ApiResponse<Boolean>> checkUsernameExists(@PathVariable String username) {
+    public ResponseEntity<ApiResponse<Boolean>> checkUsernameExists(@PathVariable("username") String username) {
         boolean exists = userService.usernameExists(username);
         return ResponseEntity.ok(ApiResponse.success(exists));
     }
     
     @GetMapping("/{username}")
-    public ResponseEntity<ApiResponse<UserDto>> getUserByUsername(@PathVariable String username) {
+    public ResponseEntity<ApiResponse<UserDto>> getUserByUsername(@PathVariable("username") String username) {
         return userService.findByUsername(username)
                 .map(user -> ResponseEntity.ok(ApiResponse.success(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
     
     @PutMapping("/{username}/activity")
-    public ResponseEntity<ApiResponse<String>> updateLastActivity(@PathVariable String username) {
+    public ResponseEntity<ApiResponse<String>> updateLastActivity(@PathVariable("username") String username) {
         userService.updateLastActivity(username);
         return ResponseEntity.ok(ApiResponse.success("Activity updated successfully"));
     }

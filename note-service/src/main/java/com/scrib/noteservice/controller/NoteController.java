@@ -19,7 +19,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/notes")
-@CrossOrigin(origins = "*")
 public class NoteController {
     
     @Autowired
