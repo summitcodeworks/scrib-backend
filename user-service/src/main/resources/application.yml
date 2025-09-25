@@ -1,0 +1,36 @@
+server:
+  port: 9201
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:postgresql://ec2-65-1-185-194.ap-south-1.compute.amazonaws.com:5432/scrib
+    username: summitcodeworks
+    password: 8ivhaah8
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.scrib.userservice: DEBUG
+    org.springframework.web: DEBUG

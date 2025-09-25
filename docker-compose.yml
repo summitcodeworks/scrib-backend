@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: scrib-postgres
+    environment:
+      POSTGRES_DB: scrib_db
+      POSTGRES_USER: scrib_user
+      POSTGRES_PASSWORD: scrib_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - scrib-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: scrib-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - scrib-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: scrib-user-service
+    ports:
+      - "9201:9201"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ec2-65-1-185-194.ap-south-1.compute.amazonaws.com:5432/scrib
+      SPRING_DATASOURCE_USERNAME: summitcodeworks
+      SPRING_DATASOURCE_PASSWORD: 8ivhaah8
+    depends_on:
+      - postgres
+    networks:
+      - scrib-network
+
+  note-service:
+    build:
+      context: .
+      dockerfile: note-service/Dockerfile
+    container_name: scrib-note-service
+    ports:
+      - "9202:9202"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ec2-65-1-185-194.ap-south-1.compute.amazonaws.com:5432/scrib
+      SPRING_DATASOURCE_USERNAME: summitcodeworks
+      SPRING_DATASOURCE_PASSWORD: 8ivhaah8
+      SPRING_REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - scrib-network
+
+  search-service:
+    build:
+      context: .
+      dockerfile: search-service/Dockerfile
+    container_name: scrib-search-service
+    ports:
+      - "9203:9203"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ec2-65-1-185-194.ap-south-1.compute.amazonaws.com:5432/scrib
+      SPRING_DATASOURCE_USERNAME: summitcodeworks
+      SPRING_DATASOURCE_PASSWORD: 8ivhaah8
+      SPRING_REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - scrib-network
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
+    container_name: scrib-gateway-service
+    ports:
+      - "9200:9200"
+    environment:
+      SPRING_REDIS_HOST: redis
+    depends_on:
+      - user-service
+      - note-service
+      - search-service
+      - redis
+    networks:
+      - scrib-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  scrib-network:
+    driver: bridge
