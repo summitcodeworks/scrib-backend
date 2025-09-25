@@ -114,8 +114,10 @@ public class NoteController {
         Pageable pageable = PageRequest.of(page, size);
         Page<NoteDto> notes;
         
-        NoteDto.Visibility visibilityEnum = visibility != null ? 
-                NoteDto.Visibility.valueOf(visibility.toUpperCase()) : null;
+        Note.Visibility visibilityEnum = null;
+        if (visibility != null) {
+            visibilityEnum = Note.Visibility.valueOf(visibility.toUpperCase());
+        }
         
         if (userId != null) {
             notes = noteService.searchUserNotes(userId, title, content, 
