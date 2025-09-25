@@ -187,14 +187,64 @@ start_redis() {
     fi
 }
 
+# Function to kill processes on service ports
+kill_service_ports() {
+    print_status "Killing any processes running on service ports..."
+    
+    local ports=(9200 9201 9202 9203)
+    local killed_any=false
+    
+    for port in "${ports[@]}"; do
+        local pid=$(lsof -ti:$port 2>/dev/null)
+        if [ ! -z "$pid" ]; then
+            print_status "Killing process $pid on port $port"
+            kill -9 $pid 2>/dev/null
+            killed_any=true
+        fi
+    done
+    
+    if [ "$killed_any" = true ]; then
+        print_success "Killed processes on service ports"
+        sleep 2
+    else
+        print_status "No processes found on service ports"
+    fi
+}
+
+# Function to cleanup existing Docker containers
+cleanup_docker_containers() {
+    print_status "Cleaning up existing Docker containers..."
+    
+    local containers=("scrib-redis" "scrib-postgres")
+    local cleaned_any=false
+    
+    for container in "${containers[@]}"; do
+        if docker ps -a --format "table {{.Names}}" | grep -q "^${container}$"; then
+            print_status "Removing existing container: $container"
+            docker stop "$container" 2>/dev/null || true
+            docker rm "$container" 2>/dev/null || true
+            cleaned_any=true
+        fi
+    done
+    
+    if [ "$cleaned_any" = true ]; then
+        print_success "Cleaned up existing Docker containers"
+        sleep 2
+    else
+        print_status "No existing containers to clean up"
+    fi
+}
+
 # Function to check PostgreSQL connection
 check_postgresql() {
     print_status "Checking PostgreSQL connection..."
     
     # Test connection to existing PostgreSQL server
     if command_exists psql; then
+        export PGPASSWORD="8ivhaah8"
         if psql -h ec2-65-1-185-194.ap-south-1.compute.amazonaws.com -p 5432 -U summitcodeworks -d scrib -c "SELECT 1;" &> /dev/null; then
             print_success "PostgreSQL connection successful"
+            unset PGPASSWORD
             return 0
         else
             print_error "Cannot connect to PostgreSQL. Please ensure PostgreSQL is running and accessible."
@@ -203,6 +253,7 @@ check_postgresql() {
             print_status "  Port: 5432"
             print_status "  Database: scrib"
             print_status "  User: summitcodeworks"
+            unset PGPASSWORD
             exit 1
         fi
     else
@@ -214,6 +265,8 @@ check_postgresql() {
 # Function to setup database schema
 setup_database_schema() {
     print_status "Setting up database schema..."
+    
+    export PGPASSWORD="8ivhaah8"
     
     # Run database schema
     if [ -f "$PROJECT_ROOT/database/schema.sql" ]; then
@@ -230,6 +283,8 @@ setup_database_schema() {
     else
         print_warning "Sample data file not found"
     fi
+    
+    unset PGPASSWORD
 }
 
 # Function to check prerequisites
@@ -380,11 +435,13 @@ show_environment_status() {
     fi
     
     # Check PostgreSQL
+    export PGPASSWORD="8ivhaah8"
     if psql -h ec2-65-1-185-194.ap-south-1.compute.amazonaws.com -p 5432 -U summitcodeworks -d scrib -c "SELECT 1;" &> /dev/null; then
         print_success "✓ PostgreSQL: Connected"
     else
         print_error "✗ PostgreSQL: Not accessible"
     fi
+    unset PGPASSWORD
     
     # Check Redis
     if docker ps | grep -q scrib-redis; then
@@ -557,6 +614,12 @@ main() {
         print_status "Installing missing dependencies..."
         install_dependencies
     fi
+    
+    # Kill any processes on service ports
+    kill_service_ports
+    
+    # Cleanup existing Docker containers
+    cleanup_docker_containers
     
     # Setup PostgreSQL
     check_postgresql
