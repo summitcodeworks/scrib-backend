@@ -187,33 +187,26 @@ start_redis() {
     fi
 }
 
-# Function to setup PostgreSQL
-setup_postgresql() {
-    print_status "Setting up PostgreSQL..."
+# Function to check PostgreSQL connection
+check_postgresql() {
+    print_status "Checking PostgreSQL connection..."
     
-    if command_exists docker; then
-        # Start PostgreSQL with Docker
-        docker run -d \
-            --name scrib-postgres \
-            -e POSTGRES_DB=scrib \
-            -e POSTGRES_USER=scrib_user \
-            -e POSTGRES_PASSWORD=scrib_password \
-            -p 5432:5432 \
-            postgres:15
-        
-        # Wait for PostgreSQL to be ready
-        print_status "Waiting for PostgreSQL to be ready..."
-        sleep 10
-        
-        # Test connection
-        if docker exec scrib-postgres psql -U scrib_user -d scrib -c "SELECT 1;" &> /dev/null; then
-            print_success "PostgreSQL is ready"
+    # Test connection to existing PostgreSQL server
+    if command_exists psql; then
+        if psql -h localhost -U scrib_user -d scrib -c "SELECT 1;" &> /dev/null; then
+            print_success "PostgreSQL connection successful"
+            return 0
         else
-            print_error "PostgreSQL failed to start"
+            print_error "Cannot connect to PostgreSQL. Please ensure PostgreSQL is running and accessible."
+            print_status "Connection details:"
+            print_status "  Host: localhost"
+            print_status "  Port: 5432"
+            print_status "  Database: scrib"
+            print_status "  User: scrib_user"
             exit 1
         fi
     else
-        print_error "Docker not found. Please install Docker or PostgreSQL manually."
+        print_error "psql command not found. Please install PostgreSQL client tools."
         exit 1
     fi
 }
@@ -222,26 +215,9 @@ setup_postgresql() {
 setup_database_schema() {
     print_status "Setting up database schema..."
     
-    # Wait for PostgreSQL to be ready
-    local max_attempts=30
-    local attempt=1
-    
-    while [ $attempt -le $max_attempts ]; do
-        if docker exec scrib-postgres psql -U scrib_user -d scrib -c "SELECT 1;" &> /dev/null; then
-            break
-        fi
-        sleep 2
-        attempt=$((attempt + 1))
-    done
-    
-    if [ $attempt -gt $max_attempts ]; then
-        print_error "PostgreSQL is not ready after 60 seconds"
-        exit 1
-    fi
-    
     # Run database schema
     if [ -f "$PROJECT_ROOT/database/schema.sql" ]; then
-        docker exec -i scrib-postgres psql -U scrib_user -d scrib < "$PROJECT_ROOT/database/schema.sql"
+        psql -h localhost -U scrib_user -d scrib -f "$PROJECT_ROOT/database/schema.sql"
         print_success "Database schema created"
     else
         print_warning "Database schema file not found"
@@ -249,7 +225,7 @@ setup_database_schema() {
     
     # Add sample data
     if [ -f "$PROJECT_ROOT/database/sample_data.sql" ]; then
-        docker exec -i scrib-postgres psql -U scrib_user -d scrib < "$PROJECT_ROOT/database/sample_data.sql"
+        psql -h localhost -U scrib_user -d scrib -f "$PROJECT_ROOT/database/sample_data.sql"
         print_success "Sample data added"
     else
         print_warning "Sample data file not found"
@@ -404,10 +380,10 @@ show_environment_status() {
     fi
     
     # Check PostgreSQL
-    if docker ps | grep -q scrib-postgres; then
-        print_success "✓ PostgreSQL: Running"
+    if psql -h localhost -U scrib_user -d scrib -c "SELECT 1;" &> /dev/null; then
+        print_success "✓ PostgreSQL: Connected"
     else
-        print_error "✗ PostgreSQL: Not running"
+        print_error "✗ PostgreSQL: Not accessible"
     fi
     
     # Check Redis
