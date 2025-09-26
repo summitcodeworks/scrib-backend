@@ -17,6 +17,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        type: basic
+        jdbc:
+          time_zone: UTC
   jackson:
     serialization:
       write-dates-as-timestamps: false

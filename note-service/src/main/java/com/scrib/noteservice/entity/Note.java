@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.scrib.noteservice.converter.VisibilityConverter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,8 +31,8 @@ public class Note {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "visibility", nullable = false)
+    @Convert(converter = VisibilityConverter.class)
+    @Column(name = "visibility", nullable = false, columnDefinition = "visibility_enum")
     private Visibility visibility;
 
     @Column(name = "code_language", length = 50)
